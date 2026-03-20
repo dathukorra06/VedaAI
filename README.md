@@ -50,18 +50,28 @@ VedaAI is a premium, AI-powered platform designed to help teachers create, manag
    npm run dev
    ```
 
-## 🌐 Deployment on Vercel
+## 🌐 Security & Environment setup
 
-VedaAI is pre-configured for **Vercel** monorepo deployment.
+To protect your API keys and database credentials, **never commit your `.env` file to version control.** Your project is pre-configured with a `.gitignore` that keeps these files private.
 
-1. Push your code to a GitHub repository.
-2. Link the repository to your Vercel account.
-3. Vercel will automatically detect the root `vercel.json` and route `/api` requests to the Express server while serving the Next.js frontend.
-4. Add the following **Environment Variables** in the Vercel project settings:
+### Local Settings
+Create a `.env` file in the `backend/` directory using the provided template:
+1. `cp backend/.env.example backend/.env`
+2. Fill in your `GEMINI_API_KEY`, `MONGODB_URI`, etc.
+
+### Vercel Deployment
+When deploying to Vercel, you must manually add these keys in the **Vercel Dashboard**:
+1. Navigate to **Project Settings** > **Environment Variables**.
+2. Add the following keys:
    - `GEMINI_API_KEY`: Your Google Gemini API Key.
-   - `MONGODB_URI`: Your MongoDB connection string.
-   - `REDIS_URL`: URL for your Redis instance (e.g., from Upstash).
+   - `MONGODB_URI`: Your MongoDB connection URL.
+   - `REDIS_URL`: Your Redis instance URL (required for candidate generation queues).
+   - `NEXT_PUBLIC_API_URL`: Set this to your production backend URL (e.g., `https://your-api.vercel.app`).
+
+## 🌐 Deployment on Vercel
+1. Push your code to GitHub.
+2. Port your project to Vercel.
+3. VedaAI will automatically detect the root `vercel.json` and route `/api` requests to the Express server while serving the Next.js frontend.
 
 ## 📄 License
-
 This project is licensed under the MIT License.
