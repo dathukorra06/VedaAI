@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, UploadCloud, X, Plus } from 'lucide-react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 import { useStore } from '../store/store';
-import { socket } from '../hooks/useJobSocket';
+
 
 const QUESTION_TYPES = [
   "Multiple Choice Questions",
@@ -57,21 +57,30 @@ export default function CreateView() {
     if (Object.keys(e).length > 0) return setErrors(e);
 
     setStep(2);
+    useStore.getState().setJobInfo('processing', 10, 'Job queued...');
+    
+    // Simulate progress updates for synchronous serverless generation
+    const progressInterval = setInterval(() => {
+        const currentProgress = useStore.getState().jobProgress;
+        if (currentProgress < 90) {
+            useStore.getState().setJobInfo('processing', currentProgress + 5, 'Generating AI assignment...');
+        }
+    }, 1500);
+
     try {
       const { data } = await axios.post(`${API_URL}/api/assignments`, form);
-      const assignment = data.assignment;
-      // Subscribe to socket FIRST, then set current assignment to avoid missing events
-      socket.on(`job-${assignment._id}`, (update: any) => {
-        const { status, progress, message, paper } = update;
-        useStore.getState().setJobInfo(status, progress, message);
-        if (paper) useStore.getState().setGeneratedPaper(paper);
-        if (status === 'done') {
-          setTimeout(() => useStore.getState().setView('output'), 800);
-        }
-      });
+      clearInterval(progressInterval);
+      
+      const { assignment, paper } = data;
       setCurrentAssignment(assignment);
+      useStore.getState().setJobInfo('done', 100, 'Question paper ready!');
+      if (paper) useStore.getState().setGeneratedPaper(paper);
+      
+      setTimeout(() => useStore.getState().setView('output'), 800);
     } catch (err: any) {
-      alert("Failed to submit job");
+      clearInterval(progressInterval);
+      useStore.getState().setJobInfo('error', 0, 'Generation failed');
+      alert("Failed to create assignment");
       console.error(err);
     }
   };

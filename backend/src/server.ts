@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Allow any localhost port for development and your production domain
+// Allow requests for development and your production domain
 const corsOrigin = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
   if (process.env.NODE_ENV !== 'production' || !origin || origin.startsWith('https://')) {
     callback(null, true);
@@ -39,6 +39,11 @@ io.on('connection', (socket) => {
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+
+// Root route to verify backend is running, useful for Vercel deployment confirmation
+app.get('/', (req, res) => {
+  res.send('Backend running successfully');
+});
 
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/groups', groupRoutes);

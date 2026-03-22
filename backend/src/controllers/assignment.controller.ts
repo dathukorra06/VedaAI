@@ -22,57 +22,27 @@ export const createAssignment = async (req: Request, res: Response) => {
     }
 
     try {
-      await addAssignmentJob({ assignmentId });
-    } catch (e: any) {
-      if (e.message === "RedisNotReady") {
-          console.warn("Redis not ready, processing job synchronously...");
-          // Fallback synchronous process
-          setTimeout(async () => {
-             const broadcast = (status: string, progress: number, message: string, paper: any = null) => {
-                io.emit(`job-${newAssignment._id}`, { status, progress, message, paper });
-             };
-             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-             
-             try {
-                broadcast('processing', 10, 'Job queued (Fallback sync mode)...');
-                await delay(600);
-                broadcast('processing', 25, 'Analyzing assignment details...');
-                await delay(800);
-                broadcast('processing', 40, 'Structuring question prompt...');
-                await delay(600);
-                broadcast('processing', 55, 'Calling AI model...');
-                
-                let assignmentData: any;
-                if (isMock) {
-                    assignmentData = newAssignment;
-                } else {
-                    assignmentData = await Assignment.findById(assignmentId);
-                    if (!assignmentData) throw new Error("Assignment not found");
-                }
-                
-                const paper = await generatePaper(assignmentData);
-
-                broadcast('processing', 75, 'Parsing question paper...');
-                await delay(500);
-                broadcast('processing', 90, 'Storing to database...');
-                
-                assignmentData.jobStatus = 'done';
-                assignmentData.generatedPaper = paper;
-                if (!isMock) await assignmentData.save();
-
-                broadcast('done', 100, 'Question paper ready!', paper);
-             } catch (err: any) {
-                console.error("Sync Job failed:", err);
-                broadcast('error', 0, err.message || "Generation failed");
-                if (!isMock) await Assignment.findByIdAndUpdate(assignmentId, { jobStatus: 'error' });
-             }
-          }, 0);
+      let assignmentData: any;
+      if (isMock) {
+          assignmentData = newAssignment;
       } else {
-         throw e;
+          assignmentData = await Assignment.findById(assignmentId);
+          if (!assignmentData) throw new Error("Assignment not found");
       }
-    }
+      
+      // Process generation synchronously for Vercel (Serverless) compatibility
+      const paper = await generatePaper(assignmentData);
+      
+      assignmentData.jobStatus = 'done';
+      assignmentData.generatedPaper = paper;
+      if (!isMock) await assignmentData.save();
 
-    res.status(201).json({ message: "Assignment created", assignment: newAssignment });
+      res.status(201).json({ message: "Assignment created", assignment: assignmentData, paper });
+    } catch (err: any) {
+      console.error("Sync Job failed:", err);
+      if (!isMock) await Assignment.findByIdAndUpdate(assignmentId, { jobStatus: 'error' });
+      res.status(500).json({ error: "Generation failed", details: err.message });
+    }
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
