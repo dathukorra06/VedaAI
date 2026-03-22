@@ -68,10 +68,16 @@ When deploying to Vercel, you must manually add these keys in the **Vercel Dashb
    - `REDIS_URL`: Your Redis instance URL (required for candidate generation queues).
    - `NEXT_PUBLIC_API_URL`: Set this to your production backend URL (e.g., `https://your-api.vercel.app`).
 
-## 🌐 Deployment on Vercel
-1. Push your code to GitHub.
-2. Port your project to Vercel.
-3. VedaAI will automatically detect the root `vercel.json` and route `/api` requests to the Express server while serving the Next.js frontend.
+## 🌐 Deployment on Render (Recommended)
+VedaAI includes a `render.yaml` Blueprint which tells Render exactly how to deploy both the Express API and Next.js frontend automatically.
+
+1. Create an account on [Render.com](https://render.com/).
+2. From the Render Dashboard, click **New +** and select **Blueprint**.
+3. Connect your GitHub account and select this repository.
+4. Render will automatically detect the two services (`veda-ai-backend` and `veda-ai-frontend`). Provide your private environment variables (`GEMINI_API_KEY` and `MONGODB_URI`) when prompted.
+5. Click **Apply** to deploy the full stack!
+
+*Note: The frontend and backend are configured to communicate perfectly out of the box using their generated `.onrender.com` URLs.*
 
 ## 📄 License
 This project is licensed under the MIT License.

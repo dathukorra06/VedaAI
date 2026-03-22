@@ -1,0 +1,40 @@
+services:
+  # -------------------------
+  # Node.js/Express Backend
+  # -------------------------
+  - type: web
+    name: veda-ai-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      # This will automatically pick up the frontend's auto-assigned Render URL
+      - key: FRONTEND_URL
+        value: https://veda-ai-frontend.onrender.com
+
+  # -------------------------
+  # Next.js Frontend
+  # -------------------------
+  - type: web
+    name: veda-ai-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # This points the frontend to the backend's auto-assigned Render URL
+      - key: NEXT_PUBLIC_API_URL
+        value: https://veda-ai-backend.onrender.com
