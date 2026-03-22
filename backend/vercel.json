@@ -11,5 +11,9 @@
       "src": "/(.*)",
       "dest": "src/server.ts"
     }
-  ]
+  ],
+  "env": {
+    "FRONTEND_URL": "https://veda-ai-frontend-theta.vercel.app"
+  }
 }
+

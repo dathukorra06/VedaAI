@@ -19,5 +19,9 @@
       "source": "/(.*)",
       "dest": "frontend/$1"
     }
-  ]
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://veda-ai-backend.vercel.app",
+    "FRONTEND_URL": "https://veda-ai-frontend-theta.vercel.app"
+  }
 }
